@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask SQLite CRUD App</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<body>
+    <h1>Flask SQLite CRUD Application</h1>
+
+    <!-- Create User Form -->
+    <h2>Create User</h2>
+    <form id="create-form" method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Create</button>
+    </form>
+
+    <hr>
+
+    <!-- Read Users -->
+    <h2>Users</h2>
+    <div class="button-container">
+        <button onclick="fetchUsers()">Refresh Users List</button>
+    </div>
+    <ul id="users-list">
+        <!-- Users will be dynamically loaded here -->
+    </ul>
+
+    <hr>
+
+    <!-- Update User Form -->
+    <h2>Update User</h2>
+    <form id="update-form" method="POST">
+        <label for="update-id">User ID:</label>
+        <input type="number" id="update-id" name="id" required>
+        <label for="update-name">New Name:</label>
+        <input type="text" id="update-name" name="name" required>
+        <button type="submit">Update</button>
+    </form>
+
+    <hr>
+
+    <!-- Delete User Form -->
+    <h2>Delete User</h2>
+    <form id="delete-form" method="POST">
+        <label for="delete-id">User ID:</label>
+        <input type="number" id="delete-id" name="id" required>
+        <button type="submit">Delete</button>
+    </form>
+
+    <script>
+        // Fetch Users List
+        function fetchUsers() {
+            fetch('/read')
+                .then(response => response.json())
+                .then(users => {
+                    const usersList = document.getElementById('users-list');
+                    usersList.innerHTML = '';  // Clear the current list
+                    users.forEach(user => {
+                        const li = document.createElement('li');
+                        li.textContent = `ID: ${user.id}, Name: ${user.name}`;
+                        usersList.appendChild(li);
+                    });
+                });
+        }
+
+        // Create User
+        document.getElementById('create-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            fetch('/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name }),
+            }).then(() => {
+                fetchUsers();  // Refresh users list
+            });
+        });
+
+        // Update User
+        document.getElementById('update-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('update-id').value;
+            const name = document.getElementById('update-name').value;
+            fetch(`/update/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name }),
+            }).then(() => {
+                fetchUsers();  // Refresh users list
+            });
+        });
+
+        // Delete User
+        document.getElementById('delete-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('delete-id').value;
+            fetch(`/delete/${id}`, {
+                method: 'DELETE',
+            }).then(() => {
+                fetchUsers();  // Refresh users list
+            });
+        });
+    </script>
+</body>
+</html>
